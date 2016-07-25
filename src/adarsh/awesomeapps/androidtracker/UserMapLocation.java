@@ -41,7 +41,11 @@ public class UserMapLocation extends Activity
 	private GoogleMap mMap;
     private double lat;
     private double lon;
-	
+	/*
+	This initiates the activity. This activity contains the mapView
+	for visualising the location of the tracked device. This also 
+	queries the path between the user and the tracked device.
+	*/
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -51,26 +55,31 @@ public class UserMapLocation extends Activity
 		String contact = intent.getStringExtra(User.EXTRA_MESSAGE);
 		getActionBar().setTitle((new ContactDetails(getContentResolver())).getContactName(contact));
 		
+		//Getting the map instance to draw on it 
 		mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-        
-        LocationTracker locationTracker = new LocationTracker(getApplicationContext());
-        Location location = locationTracker.getLocation();
-
-        SharedPreferences prefs = getSharedPreferences("TRACKING_preferences", Context.MODE_PRIVATE);
-        double latitude = Double.parseDouble(prefs.getString(contact+"latitude", "0"));
-        double longitude = Double.parseDouble(prefs.getString(contact+"longitude", "0"));
-        double radius = prefs.getInt(contact+"radius", 1000);
-        
-        mMap.clear();
-        mMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)).title(new ContactDetails(getContentResolver()).getContactName(contact)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 12);
-        mMap.animateCamera(cameraUpdate);
-        
-        mMap.addCircle(new CircleOptions().center(new LatLng(location.getLatitude(), location.getLongitude())).radius(radius).strokeColor(Color.BLUE).fillColor(Color.CYAN));
-       
-        String url = getDirectionsUrl(new LatLng(location.getLatitude(), location.getLongitude()), new LatLng(latitude, longitude));
-        new DownloadTask().execute(url);
+        	
+        	//Getting the user location 
+	        LocationTracker locationTracker = new LocationTracker(getApplicationContext());
+	        Location location = locationTracker.getLocation();
+		
+		//Getting the location of the concerned tracked device and parsing it to the required format
+	        SharedPreferences prefs = getSharedPreferences("TRACKING_preferences", Context.MODE_PRIVATE);
+	        double latitude = Double.parseDouble(prefs.getString(contact+"latitude", "0"));
+	        double longitude = Double.parseDouble(prefs.getString(contact+"longitude", "0"));
+	        double radius = prefs.getInt(contact+"radius", 1000);
+	        
+	        //drawing the locations on map and focusing the camera to the user's location
+	        mMap.clear();
+	        mMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)).title(new ContactDetails(getContentResolver()).getContactName(contact)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+	        mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+	        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 12);
+	        mMap.animateCamera(cameraUpdate);
+	        
+	        mMap.addCircle(new CircleOptions().center(new LatLng(location.getLatitude(), location.getLongitude())).radius(radius).strokeColor(Color.BLUE).fillColor(Color.CYAN));
+	       
+	       	//Fetching the path between the two location and plotting the path
+	        String url = getDirectionsUrl(new LatLng(location.getLatitude(), location.getLongitude()), new LatLng(latitude, longitude));
+	        new DownloadTask().execute(url);
 	}
 	
 	private String getDirectionsUrl(LatLng source, LatLng dest)

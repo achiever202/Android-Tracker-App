@@ -23,7 +23,12 @@ public class LocationTracker implements android.location.LocationListener
 		isGPSEnabled = false;
 		isNetworkEnabled = false;
 	}
-	
+	/*
+	Method: Fetches the location of the device.
+	Checks whether the GPS and network is enabled.
+	Tries to get the location from the network provider first. 
+	If it is not feasible then go for GPS
+	*/
 	public Location getLocation()
 	{
 		locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
@@ -36,7 +41,8 @@ public class LocationTracker implements android.location.LocationListener
 			Toast.makeText(context, "No network found.", Toast.LENGTH_SHORT).show();
 			return null;
 		}
-		
+		// Calls the Google Api for getting the location from
+		// network provider
 		if(isNetworkEnabled)
 		{
 			locationManager.requestLocationUpdates(
@@ -45,6 +51,8 @@ public class LocationTracker implements android.location.LocationListener
                     (float)10, this);
 			location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 		}
+		
+		// Calls the Google Api for getting the location from the GPS
 		else
 		{
 			locationManager.requestLocationUpdates(
